@@ -459,6 +459,8 @@ class AutoMatrixWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         if nb_files!=0:
             for key,values in patients.items():
+                model2 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode")
+                volumesLogic = slicer.modules.volumes.logic()
                 for scan in values['scan']:
                     fname, extension_scan = os.path.splitext(scan)
                     try :
@@ -503,14 +505,16 @@ class AutoMatrixWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                                 os.makedirs(os.path.dirname(outpath))
 
                             self.UpdateTime()
-                            model.SetAndObserveTransformNodeID(tform.GetID())
-                            model.HardenTransform()
+                            volumesLogic = slicer.modules.volumes.logic()
+                            model2 = volumesLogic.CloneVolume(slicer.mrmlScene, model, "model2")
+                            model2.SetAndObserveTransformNodeID(tform.GetID())
+                            model2.HardenTransform()
                             self.UpdateTime()
 
                             original_stdin = sys.stdin
                             sys.stdin = DummyFile()
 
-                            process =  threading.Thread(target=self.saveOutput, args=(model,outpath.split(extension_scan)[0]+self.ui.LineEditSuffix.text+matrix_name+extension_scan,))
+                            process =  threading.Thread(target=self.saveOutput, args=(model2,outpath.split(extension_scan)[0]+self.ui.LineEditSuffix.text+matrix_name+extension_scan,))
                             process.start()
 
                             while process.is_alive():
