@@ -505,8 +505,17 @@ class AutoMatrixWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                                 os.makedirs(os.path.dirname(outpath))
 
                             self.UpdateTime()
-                            volumesLogic = slicer.modules.volumes.logic()
-                            model2 = volumesLogic.CloneVolume(slicer.mrmlScene, model, "model2")
+                            if extension_scan==".nii.gz":
+                                volumesLogic = slicer.modules.volumes.logic()
+                                model2 = volumesLogic.CloneVolume(slicer.mrmlScene, model, "model2")
+                            else : 
+                                model2 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelNode")
+                                model2.Copy(model)
+                                sourcePolyData = model.GetPolyData()
+                                copiedPolyData = vtk.vtkPolyData()
+                                copiedPolyData.DeepCopy(sourcePolyData)
+                                model2.SetAndObservePolyData(copiedPolyData)
+                                
                             model2.SetAndObserveTransformNodeID(tform.GetID())
                             model2.HardenTransform()
                             self.UpdateTime()
